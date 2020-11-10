@@ -23,21 +23,45 @@ pre_process_shapes <- function(y, raster_facets_vars, gm, interactive) {
 		by_var = NULL
 		treat_as_by = FALSE
 	} else if (inherits(shp, "stars") && !has_raster(shp)) {
-		# d = dim(shp)
-		# v = lapply(1L:length(d), function(i) stars::st_get_dimension_values(shp, which = i))
-		# is_sfc = vapply(v, inherits, logical(1), "sfc")
-		# if (!any(is_sfc)) stop(y$shp_name, " is a stars object without raster nor geometry dimension", call. = FALSE)
-		# vars = v[[which(!is_sfc)[1]]]
-		# 
-
-		by_var = names(shp)[1]
 		
-		if (length(shp) > 1L && show.warnings) {
-			warning("Only the first attribute \"", by_var, "\" of ", y$shp_name, " will be plotted", call. = FALSE)
+		dimnms = dimnames(shp)
+		
+		dimvals = lapply(1:length(dimnms), function(i) st_get_dimension_values(shp, i))
+		dimsfc = vapply(dimvals, inherits, what = "sfc", FUN.VALUE = logical(1))
+		
+		if (!any(dimsfc)) {
+			stop("stars object ", y$shp_name, " is a stars object without raster and doens't have a geometry dimension")
+		} else {
+			dimid = which(dimsfc)
+			geoms = dimvals[[dimid]]
+			dimnms_new = dimnms
+			dimnms_new[dimid] = "tmapID__"
+			by_vars = c(setdiff(dimnms_new, "tmapID__"), "ATTRIBUTE") # possible 'group by' variables
+			shpnames = names(shp)
+			shp = st_set_dimensions(shp, dimnms[dimid], values = 1:length(geoms))
+			shp = st_set_dimensions(shp, names = dimnms_new)
 		}
-		treat_as_by = TRUE
 		
-		shp = sf::st_as_sf(shp[by_var])
+		data = as.data.table(shp)
+
+		if ("ATTRIBUTE" %in% raster_facets_vars) {
+			data = data.table::melt(data, measure.vars = shpnames, variable.name = "ATTRIBUTE", value.name = "VALUE")
+		}
+		shp = geoms
+		
+		# by_var = names(shp)[1]
+		# 
+		# if (length(shp) > 1L && show.warnings) {
+		# 	warning("Only the first attribute \"", by_var, "\" of ", y$shp_name, " will be plotted", call. = FALSE)
+		# }
+		# treat_as_by = TRUE
+		
+		#shp = sf::st_as_sf(shp[by_var], long = TRUE)
+		
+		#shp = sf::st_as_sf(shp[by_var])
+		treat_as_by = FALSE
+		by_var = NULL
+		
 		shpnames = setdiff(names(shp), attr(shp, "sf_column"))
 	}
 	

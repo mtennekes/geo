@@ -26,6 +26,7 @@ Imports:
     sf (>= 0.9-3),
     stars (>= 0.4-2),
     units (>= 0.6-1),
+    data.table,
     grid,
     RColorBrewer,
     viridisLite,

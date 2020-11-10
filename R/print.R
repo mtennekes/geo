@@ -30,6 +30,7 @@
 #' @importFrom htmlwidgets appendContent onRender
 #' @importFrom htmltools tags HTML htmlEscape
 #' @import leafsync
+#' @import data.table
 #' @importFrom utils packageVersion
 #' @importFrom rlang missing_arg expr
 #' @export
