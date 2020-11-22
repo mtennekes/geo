@@ -19,10 +19,7 @@ pre_process_shapes <- function(y, raster_facets_vars, gm, interactive) {
 	
 	
 	# process spatiotemporal array
-	if (inherits(shp, c("sf", "sfc", "Spatial"))) {
-		by_var = NULL
-		treat_as_by = FALSE
-	} else if (inherits(shp, "stars") && !has_raster(shp)) {
+	if (inherits(shp, "stars") && !has_raster(shp)) {
 		
 		dimnms = dimnames(shp)
 		
@@ -63,10 +60,7 @@ pre_process_shapes <- function(y, raster_facets_vars, gm, interactive) {
 		by_var = NULL
 		
 		shpnames = setdiff(names(shp), attr(shp, "sf_column"))
-	}
-	
-	
-	if (inherits(shp, c("stars", "Raster", "SpatialPixels", "SpatialGrid"))) {
+	} else if (inherits(shp, c("stars", "Raster", "SpatialPixels", "SpatialGrid"))) {
 		is.RGB <- attr(raster_facets_vars, "is.RGB") # true if tm_rgb is used (NA if qtm is used)
 		rgb.vars <- attr(raster_facets_vars, "rgb.vars")
 		to.Cat <- attr(raster_facets_vars, "to.Cat") # true if tm_raster(..., style = "cat) is specified
@@ -261,6 +255,9 @@ pre_process_shapes <- function(y, raster_facets_vars, gm, interactive) {
 		type <- "raster"
 		
 	} else {
+		by_var = NULL
+		treat_as_by = FALSE
+		
 		# save_bbox (sp objects allow for custom bboxes, sf objects don't)
 		
 		
